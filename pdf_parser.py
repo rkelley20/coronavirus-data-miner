@@ -6,6 +6,7 @@ def remove_bad_headers(data:str):
     headers = [
     'Territories\n**\n',
     'European Region',
+    'European \nRegion ',
     'South\n-\nEast Asia Region',
     'Eastern Mediterranean Region',
     'Region of the Americas',
@@ -100,7 +101,6 @@ def scrape_pdf(NAME: str):
 
         for row in data:
             for item in row:
-                
                 # some checks to remove invalid data
                 if item == [''] or item[0] == '': continue
                 if item == [' \n'] or item == [' ']: continue
@@ -109,4 +109,5 @@ def scrape_pdf(NAME: str):
                 stripped = [x.replace('\n','') for x in item]
                 if item == [' ']: continue
 
+                # print(item)
                 file_writer.writerow(stripped)

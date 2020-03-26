@@ -12,7 +12,6 @@ def get_latest_report(towns):
     raise Exception
 
 
-
 def main():
     WHO_URL = "https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports"
 
