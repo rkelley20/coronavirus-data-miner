@@ -1,8 +1,8 @@
 import PyPDF2
 import csv
 
-
 def remove_bad_headers(data:str):
+    '''Removes bad headers to ensure data can be parsed properly'''
     headers = [
     'Territories\n**\n',
     'European Region',
@@ -12,17 +12,19 @@ def remove_bad_headers(data:str):
     'African Region',
     'European Region ']
 
+    # used to check if the header is in the string
     for item in headers:
         try:
-            fix = data.split(item)
-            fix[1] = fix[1].lstrip()
-            data = ''.join(fix)
+            fix = data.split(item)      # split the item because we don't need it
+            fix[1] = fix[1].lstrip()    # strip the headers to fix the problem
+            data = ''.join(fix)         # rejoin the string 
         except IndexError:
             pass 
 
     return data
 
 def chunker(data: list, chunksize=7):
+    '''This for breaking up the pdf into sections of data'''
     local = data
     chunks = []
     for i in range(0, len(local), chunksize):
@@ -31,15 +33,17 @@ def chunker(data: list, chunksize=7):
     return chunks
 
 def find_last_pages(i: int, num_pages: int, pdf_reader):
+    '''Grabs all the data from the pdf until it reaches last page'''
     all_chunks = []
     curr = i
     while curr < num_pages:
         page_data = pdf_reader.getPage(curr).extractText()
 
-        if "Grand total" in page_data:
+        if "Grand total" in page_data: # if last page
             good_data = remove_bad_headers(page_data)
             last_chunk = chunker(good_data.split("\n \n"))
 
+            # get rid of everything after last country
             for idx, item in enumerate(last_chunk):
                 for sub_idx, sub_item in enumerate(item):
                     if sub_item == "Subtotal for all \nregions":
@@ -48,23 +52,28 @@ def find_last_pages(i: int, num_pages: int, pdf_reader):
             all_chunks.append(last_chunk)
             return all_chunks
         else:
-            if curr == i:
+            if curr == i: # used for the first page
                 good_data = remove_bad_headers(page_data)
                 
+                # gets the first region of data and removes western pacific region heading
                 all_chunks.append(
                     chunker(good_data.split("Western Pacific Region")[1].split("\n \n")[1:]
                 ))
                 
             else:
+                # normal page of the table usually in middle
                 good_data = remove_bad_headers(page_data)
                 all_chunks.append(chunker(
                     good_data.split("\n \n")
                 ))
+
         curr += 1
     raise "NoEndOfDocument"
         
 
+
 def find_covid_data(pdf_reader):
+    '''Used to grab pages from pdf to find table'''
     num_pages = pdf_reader.numPages
     for i in range(num_pages):
         page_data = pdf_reader.getPage(i).extractText()
@@ -74,6 +83,7 @@ def find_covid_data(pdf_reader):
   
 
 def main():
+
     data = None
     with open('another3.pdf','rb') as f:
         data = find_covid_data(PyPDF2.PdfFileReader(f))
@@ -85,23 +95,20 @@ def main():
         file_writer.writerow(["country", "cases", "cases_new", 
             "deaths", "deaths_new", "transmisison_classification",
             "days_since_last_report"])
+
         for row in data:
             for item in row:
-
-                # country = item[0]
-                # total_confirmed = item[1]
+                
+                # some checks to remove invalid data
                 if item == [''] or item[0] == '': continue
                 if item == [' \n'] or item == [' ']: continue
-                # total_confirmed_new = item[2]
-                # total_deaths = item[3]
-                # total_new_deaths = item[4]
-                # classification = item[5]
-                # last_report = item[6]
+
                 stripped = [x.replace('\n','') for x in item]
                 if item == [' ']: continue
 
                 print(stripped)
                 file_writer.writerow(stripped)
+
 
 if __name__ == "__main__":
     main()
