@@ -82,13 +82,15 @@ def find_covid_data(pdf_reader):
     raise "ShitSamError"
   
 
-def main():
+def scrape_pdf(NAME: str):
 
     data = None
-    with open('another3.pdf','rb') as f:
+    # read the pdf to prepare for scraping
+    with open(f'{NAME}.pdf','rb') as f:
         data = find_covid_data(PyPDF2.PdfFileReader(f))
 
-    with open('example.csv', 'w') as csv_file:
+    # write the pdf to a csv formatted with headers
+    with open(f'{NAME}.csv', 'w') as csv_file:
         file_writer = csv.writer(csv_file, delimiter=',',
             quotechar='|', quoting=csv.QUOTE_MINIMAL)
        
@@ -102,13 +104,9 @@ def main():
                 # some checks to remove invalid data
                 if item == [''] or item[0] == '': continue
                 if item == [' \n'] or item == [' ']: continue
-
+                
+                # get rid of newlines in each row
                 stripped = [x.replace('\n','') for x in item]
                 if item == [' ']: continue
 
-                print(stripped)
                 file_writer.writerow(stripped)
-
-
-if __name__ == "__main__":
-    main()
