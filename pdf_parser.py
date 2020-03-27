@@ -113,6 +113,3 @@ def scrape_pdf(NAME: str):
                 if item == [' ']: continue
 
                 file_writer.writerow(stripped)
-
-
-scrape_pdf("20200326-sitrep-66-covid-19")
