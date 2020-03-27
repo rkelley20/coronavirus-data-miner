@@ -22,7 +22,10 @@ def remove_bad_headers(data:str):
         except IndexError:
             pass 
 
-    return data
+    fix = data.replace(
+            "\nLocal\n \ntransmission\n","\nLocal transmission\n"
+    ).replace("\nImported cases\n \nonly\n","\nImported cases only\n")
+    return fix
 
 def chunker(data: list, chunksize=7):
     '''This for breaking up the pdf into sections of data'''
@@ -55,7 +58,7 @@ def find_last_pages(i: int, num_pages: int, pdf_reader):
         else:
             if curr == i: # used for the first page
                 good_data = remove_bad_headers(page_data)
-                
+                # print(good_data)
                 # gets the first region of data and removes western pacific region heading
                 all_chunks.append(
                     chunker(good_data.split("Western Pacific Region")[1].split("\n \n")[1:]
@@ -109,5 +112,7 @@ def scrape_pdf(NAME: str):
                 stripped = [x.replace('\n','') for x in item]
                 if item == [' ']: continue
 
-                # print(item)
                 file_writer.writerow(stripped)
+
+
+scrape_pdf("20200326-sitrep-66-covid-19")
