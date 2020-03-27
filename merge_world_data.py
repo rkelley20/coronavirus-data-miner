@@ -19,7 +19,7 @@ git.Git('').clone('git@github.com:CSSEGISandData/COVID-19.git')
 
 time_series_path = 'COVID-19/csse_covid_19_data/csse_covid_19_time_series/'
 
-recovered: pd.DataFrame = pd.read_csv(os.path.join(time_series_path, 'time_series_19-covid-Recovered.csv'))
+recovered: pd.DataFrame = pd.read_csv(os.path.join(time_series_path, 'time_series_covid19_recovered_global.csv'))
 confirmed: pd.DataFrame = pd.read_csv(os.path.join(time_series_path, 'time_series_covid19_confirmed_global.csv'))
 deaths: pd.DataFrame = pd.read_csv(os.path.join(time_series_path, 'time_series_covid19_deaths_global.csv'))
 
@@ -151,7 +151,7 @@ recovered = join_data(recovered, new_recovered)
 confirmed = join_data(confirmed, new_confirmed)
 deaths = join_data(deaths, new_deaths)
 
-def compare_confirmed_and_deaths(df) -> pd.DataFrame:
+def take_greatest(df) -> pd.DataFrame:
     to_drop = {col for col in df.columns if col.endswith('_jhu') or col.endswith('_unh')}
     dates = {col.split('_')[0] for col in df.columns if col != 'country'}
 
@@ -163,8 +163,9 @@ def compare_confirmed_and_deaths(df) -> pd.DataFrame:
 
     return df
 
-confirmed = compare_confirmed_and_deaths(confirmed)
-deaths = compare_confirmed_and_deaths(deaths)
+confirmed = take_greatest(confirmed)
+deaths = take_greatest(deaths)
+recovered = take_greatest(recovered)
 
 print(confirmed.head())
 print(deaths.head())

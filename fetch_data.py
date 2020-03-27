@@ -14,13 +14,15 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:10.0) Gecko/20100101 Firefox/10.0'
 }
 
-geocoder = Nominatim(user_agent=headers['User-Agent'], timeout=120)
+geocoder = Nominatim(user_agent=headers['User-Agent'], timeout=60)
 
 def try_int(s):
     try:
         s = s.replace(',', '')
         return int(s)
     except:
+        if s is not None:
+            print(f'Failed to parse {s} as integer')
         return None
 
 def try_geocode(location):
