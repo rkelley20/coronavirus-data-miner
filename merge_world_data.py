@@ -8,11 +8,14 @@ import glob
 from pathlib import Path
 from typing import *
 from datetime import datetime
+import shutil
 
 # Clone the JHU repo into cwd
-if not Path('COVID-19/').exists():
-    print('Cloning JHU repo because it does not already exist...')
-    git.Git('').clone('git@github.com:CSSEGISandData/COVID-19.git')
+jhu_repo = Path('COVID-19/')
+if jhu_repo.exists():
+    shutil.rmtree(jhu_repo)
+
+git.Git('').clone('git@github.com:CSSEGISandData/COVID-19.git')
 
 time_series_path = 'COVID-19/csse_covid_19_data/csse_covid_19_time_series/'
 
