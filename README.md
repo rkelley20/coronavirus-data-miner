@@ -11,5 +11,3 @@ This program can be used my running the following command:
 ```
 $ python3 report_puller.py
 ```
-
-This is ran using 
