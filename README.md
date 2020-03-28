@@ -6,8 +6,14 @@ This program pulls WHO's latest COVID-19 PDF from [here](https://www.who.int/eme
 
 This was written in python 3.6.9
 
+## Installation
+
+```zsh
+pip install -r requirements.txt
+```
+
 This program can be used my running the following command:
 
-```
-$ python3 report_puller.py
+```zsh
+python3 report_puller.py
 ```
