@@ -2,11 +2,13 @@ import pandas as pd
 import glob
 import os
 import csv
+from functools import wraps
 from datetime import datetime
 from typing import *
 from pathlib import Path
 from geopy.geocoders.base import Geocoder
 from geopy.exc import GeopyError
+
 
 def load_newest_csv(path: str) -> pd.DataFrame:
     csv_glob = os.path.join(path, '*.csv')
@@ -41,6 +43,20 @@ def try_int(s) -> Union[int, None]:
     except:
         return None
 
+def cache(func):
+    _cache = {}
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        loc = args[1]
+        data = _cache.get(loc)
+        if data is None:
+            data = func(*args, **kwargs)
+            _cache[loc] = data
+        return data
+    return wrapper
+
+
+@cache
 def geocode(geocoder: Geocoder, location: str) -> Union[Tuple[float, float], Tuple[None, None]]:
     try:
         loc = geocoder.geocode(location)

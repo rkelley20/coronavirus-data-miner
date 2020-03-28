@@ -13,6 +13,11 @@ headers = {
 geocoder = Nominatim(user_agent=headers['User-Agent'], timeout=60)
 
 def set_geocoder(new_geocoder: Geocoder) -> None:
+    """Sets the geocoder to use for geolocation.
+
+    Args:
+        new_geocoder (Geocoder): The geocoder to use. Must be a valid geopy geocoder.
+    """
     global geocoder
     geocoder = new_geocoder
 
