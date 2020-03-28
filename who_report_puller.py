@@ -1,4 +1,5 @@
 import os
+import pathlib
 import requests
 import pdf_parser
 from pdf_exceptions import PDFScrapeException, PDFNotFoundException
@@ -31,6 +32,7 @@ def pull_who_csv(path: str="") -> str:
     :returns: csv path, pdf path. Can Raise either PDFScrapeException or PDFNotFoundExceptions
     """
 
+
     WHO_URL = "https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports"
 
     # requests situation report website
@@ -48,8 +50,19 @@ def pull_who_csv(path: str="") -> str:
     name = report.split('situation-reports/')[1].split(".pdf")[0]
     covid_request = requests.get(report)
 
-    # download pdf
-    who_path_pdf = f"{path}{name}.pdf"
+    who_path_files = f"{path}{name}"
+
+
+    who_path_pdf = f"{who_path_files}.pdf"
+    who_path_csv = who_path_pdf.replace(".pdf", ".csv")
+
+    cache_csv = pathlib.Path(f"{who_path_files}.csv")
+
+    # check if csv cached
+    if cache_csv.exists():
+        print("Caching")
+        return who_path_csv, who_path_pdf
+
     with open(who_path_pdf, "wb") as f:
         f.write(covid_request.content)
     
