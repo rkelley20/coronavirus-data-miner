@@ -62,5 +62,3 @@ def pull_who_csv(path: str="") -> str:
         raise PDFScrapeException("WHO Changed PDF Format")
     
     return who_path_csv, who_path_pdf
-
-print(pull_who_csv(path=""))
