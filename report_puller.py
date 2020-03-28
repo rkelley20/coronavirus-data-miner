@@ -63,4 +63,4 @@ def pull_who_csv(path: str="") -> str:
     
     return who_path_csv, who_path_pdf
 
-print(pull_who_csv(path="test/"))
+print(pull_who_csv(path=""))
