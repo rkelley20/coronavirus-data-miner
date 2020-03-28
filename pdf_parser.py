@@ -1,8 +1,16 @@
 import PyPDF2
 import csv
+from pdf_exceptions import PDFEOFException, PDFNewFileFormatException
 
-def remove_bad_headers(data:str):
-    '''Removes bad headers to ensure data can be parsed properly'''
+def remove_bad_headers(data:str) -> str:
+    """Remove bad headers from CSV data
+
+    :param data: data to remove headers from
+    :param type: str
+
+    :returns: string without bad headers.
+    :return type: str
+    """
     headers = [
         'Territories\n**\n',
         'European Region',
@@ -28,17 +36,30 @@ def remove_bad_headers(data:str):
     ).replace("\nImported cases\n \nonly\n","\nImported cases only\n")
     return fix
 
-def chunker(data: list, chunksize=7):
-    '''This for breaking up the pdf into sections of data'''
-    local = data
+def chunker(data: list, chunksize=7) -> list:
+    """Split up into chunks for putting into CSV
+
+    :param data: data to split up
+    :param type: list
+
+    :returns: chunk for each page
+    :return type: list
+    """
     chunks = []
-    for i in range(0, len(local), chunksize):
-        chunks.append(local[i:i+chunksize])
+    for i in range(0, len(data), chunksize):
+        chunks.append(data[i:i+chunksize])
 
     return chunks
 
-def find_last_pages(i: int, num_pages: int, pdf_reader):
-    '''Grabs all the data from the pdf until it reaches last page'''
+def find_last_pages(i: int, num_pages: int, pdf_reader) -> list:
+    """Parses through each page.
+
+    :param i: starting page number
+    :param type: int
+
+    :returns: the list of all the data parsed
+    :return type: list
+    """
     all_chunks = []
     curr = i
     while curr < num_pages:
@@ -73,29 +94,52 @@ def find_last_pages(i: int, num_pages: int, pdf_reader):
                 ))
 
         curr += 1
-    raise "NoEndOfDocument"
+    raise PDFEOFException("There was no data found in PDF")
         
 
 
-def find_covid_data(pdf_reader):
-    '''Used to grab pages from pdf to find table'''
+def find_covid_data(pdf_reader: PyPDF2.PdfFileReader) -> list:
+    """Used to find the covid data in the PDF
+
+    :param pdf_reader: reader that is pulling from pdf
+    :param type: PyPDF2.PdfFileReader
+
+    :returns: all the data parsed from pdf
+    :return type: list
+    """
     num_pages = pdf_reader.numPages
     for i in range(num_pages):
         page_data = pdf_reader.getPage(i).extractText()
         if "SURVEILLANCE" in page_data:
-            return find_last_pages(i, num_pages, pdf_reader)
-    raise "ShitSamError"
+            try:
+                return find_last_pages(i, num_pages, pdf_reader)
+            except:
+                break
+    raise PDFNewFileFormatException("There is a new format used for the PDF by WHO.")
   
 
-def scrape_pdf(NAME: str):
+def scrape_pdf(who_pdf: str, who_csv:str) -> bool:
+    """Used to scrape the PDF
 
+    :param who_pdf: world heath orginzation pdf location relative
+    :param type: str
+
+    :param who_csv: world heath orginzation csv location relative
+    :param type: str
+
+    :returns: all the data parsed from pdf
+    :return type: bool
+    """
     data = None
     # read the pdf to prepare for scraping
-    with open(f'{NAME}.pdf','rb') as f:
-        data = find_covid_data(PyPDF2.PdfFileReader(f))
+    with open(f'{who_pdf}','rb') as f:
+        try:
+            data = find_covid_data(PyPDF2.PdfFileReader(f))
+        except:
+            return True
 
     # write the pdf to a csv formatted with headers
-    with open(f'{NAME}.csv', 'w') as csv_file:
+    with open(f'{who_csv}', 'w') as csv_file:
         file_writer = csv.writer(csv_file, delimiter=',',
             quotechar='|', quoting=csv.QUOTE_MINIMAL)
        
@@ -114,3 +158,4 @@ def scrape_pdf(NAME: str):
                 if item == [' ']: continue
 
                 file_writer.writerow(stripped)
+    return False

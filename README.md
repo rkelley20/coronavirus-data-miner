@@ -12,7 +12,7 @@ This was written in python 3.6.9
 pip install -r requirements.txt
 ```
 
-This program can be used my running the following command:
+## Running Program
 
 ```zsh
 python3 report_puller.py

@@ -1,18 +1,36 @@
+import os
 import requests
-from bs4 import BeautifulSoup
 import pdf_parser
+from pdf_exceptions import PDFScrapeException, PDFNotFoundException
+from bs4 import BeautifulSoup
 
 
-def get_latest_report(towns):
-    """Parse the HTML to get latest REPORT URL"""
+def get_latest_report(towns: BeautifulSoup) -> str:
+    """Find the latest report from beautful soup
+
+    :param path: towns
+    :param type: BeautifulSoup
+
+    :returns: URL for PDF, can raise PDFNotFoundException
+    :return type:
+    """
     for row in towns:
+        # break
         data = row.find_all('a', attrs = {'target':'_blank'})
         for item in data:
             return f"https://www.who.int{item['href']}"
-    raise Exception
+    raise PDFNotFoundException("Unable to find WHO situation report.")
 
 
-def main():
+def pull_who_csv(path: str="") -> str:
+    """Create WHO CSV file for usage.
+
+    :param path: where to download PDF & CSV.
+    :param type: str
+
+    :returns: csv path, pdf path. Can Raise either PDFScrapeException or PDFNotFoundExceptions
+    """
+
     WHO_URL = "https://www.who.int/emergencies/diseases/novel-coronavirus-2019/situation-reports"
 
     # requests situation report website
@@ -23,6 +41,7 @@ def main():
     towns = covid_soup.find_all("div", class_="sf-content-block content-block")
     
     # find the report name
+    report = None
     report = get_latest_report(towns)
 
     # get the name to be used as the pdf file
@@ -30,11 +49,18 @@ def main():
     covid_request = requests.get(report)
 
     # download pdf
-    with open(f"{name}.pdf", "wb") as f:
+    who_path_pdf = f"{path}{name}.pdf"
+    with open(who_path_pdf, "wb") as f:
         f.write(covid_request.content)
+    
+    who_path_csv = who_path_pdf.replace(".pdf", ".csv")
 
     # scrape the pdf
-    pdf_parser.scrape_pdf(name)
+    who_pdf_problem = pdf_parser.scrape_pdf(who_path_pdf, who_path_csv)
 
-if __name__ == "__main__":
-    main()
+    if who_pdf_problem == True:
+        raise PDFScrapeException("WHO Changed PDF Format")
+    
+    return who_path_csv, who_path_pdf
+
+print(pull_who_csv(path="test/"))
