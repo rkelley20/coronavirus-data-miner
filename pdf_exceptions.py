@@ -14,6 +14,6 @@ class PDFNewFileFormatException(Exception):
         super().__init__(message)
 
 class PDFNotFoundException(Exception):
-"""Used when the PDF is not found scraping the data online"""
+    """Used when the PDF is not found scraping the data online"""
     def __init__(self, message):
         super().__init__(message)
