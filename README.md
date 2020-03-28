@@ -31,3 +31,8 @@ Otherwise, you can run the service (assuming you followed above steps) by doing 
 sudo systemctl covid-data start
 sudo systemctl covid-data enable
 ```
+
+## Notes
+
+The default data directory is `/srv/miner/`, this directory will try to be created. In order for the program to create the directory you must invoke the service with `sudo`.
+You do not need to invoke the service with `sudo` if the data directory is in an area where you have write/read access to.
