@@ -1,5 +1,5 @@
 # coronavirus-data-miner
-Scrapes websites for the last coronavirus information across the world.
+Coronavirus Data Miner for UNH's Pandemics project. This is a service that will continuously fetch Coronavirus data from multiple sources, normalize them, prep them, and distribute them to our public repositories.
 
 ## Installation
 
