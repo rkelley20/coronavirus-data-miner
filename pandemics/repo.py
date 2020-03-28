@@ -6,8 +6,6 @@ import pandas as pd
 import pandemics.processing
 from typing import *
 
-JHU_REPO_PATH = '/home/urbana/repos/pandemics-data-miner/COVID-19'
-
 def clone_repo(git_url: str, path: str, force: bool = True, use_ssh: bool = False) -> Union[git.Repo, None]:
     repo_path = Path(path)
     if repo_path.exists():
@@ -22,29 +20,11 @@ def clone_repo(git_url: str, path: str, force: bool = True, use_ssh: bool = Fals
     
     return repo
 
-def clone_jhu(force: bool = True) -> None:
-    return clone_repo('git@github.com:CSSEGISandData/COVID-19.git', JHU_REPO_PATH, force=force, use_ssh=False)
+def clone_jhu(path: str, force: bool = True) -> None:
+    return clone_repo('git@github.com:CSSEGISandData/COVID-19.git', path, force=force, use_ssh=False)
 
 def push_files(repo: git.Repo, files: Iterable[str], msg: str = '') -> None:
     repo.git.add(files)
     repo.index.commit(msg)
     origin = repo.remote(name='origin')
     origin.push()
-
-def jhu_recovered(normalize: bool = True) -> pd.DataFrame:
-    df = pd.read_csv(f'{JHU_REPO_PATH}/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv')
-    if normalize:
-        df = pandemics.processing.jhu_normalize(df)
-    return df
-
-def jhu_confirmed(normalize: bool = True) -> pd.DataFrame:
-    df = pd.read_csv(f'{JHU_REPO_PATH}/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv')
-    if normalize:
-        df = pandemics.processing.jhu_normalize(df)
-    return df
-
-def jhu_deaths(normalize: bool = True) -> pd.DataFrame:
-    df = pd.read_csv(f'{JHU_REPO_PATH}/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv')
-    if normalize:
-        df = pandemics.processing.jhu_normalize(df)
-    return df

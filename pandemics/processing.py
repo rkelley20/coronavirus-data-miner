@@ -2,6 +2,7 @@ import pandas as pd
 from typing import *
 import pandemics.utils
 from datetime import datetime
+import os.path
 
 
 def jhu_normalize(df: pd.DataFrame) -> pd.DataFrame:
@@ -112,10 +113,17 @@ def join_unh_jhu(df: pd.DataFrame, to_join: Union[pd.DataFrame, Iterable[pd.Data
 
     return df
 
-def get_world_update(normalize=True, greatest=True) -> pd.DataFrame:
-    recovered_jhu = pandemics.repo.jhu_recovered(normalize=normalize)
-    confirmed_jhu = pandemics.repo.jhu_confirmed(normalize=normalize)
-    deaths_jhu = pandemics.repo.jhu_deaths(normalize=normalize)
+def get_jhu_data(path: str, normalize: bool = True) -> pd.DataFrame:
+    df = pd.read_csv(path)
+    if normalize:
+        df = pandemics.processing.jhu_normalize(df)
+    return df
+
+def get_world_update(jhu_repo_path: str, normalize=True, greatest=True) -> pd.DataFrame:
+
+    recovered_jhu = get_jhu_data(os.path.join(jhu_repo_path, 'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'), normalize=normalize)
+    confirmed_jhu = get_jhu_data(os.path.join(jhu_repo_path, 'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'), normalize=normalize)
+    deaths_jhu = get_jhu_data(os.path.join(jhu_repo_path, 'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'), normalize=normalize)
 
     # Get the most recent world data (contains confirmed, deaths, and recovered all in one)
     unh_world = pandemics.fetch.world_data(normalize=normalize)
