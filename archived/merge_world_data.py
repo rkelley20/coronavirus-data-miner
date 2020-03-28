@@ -1,8 +1,5 @@
-import csv
 import pandas as pd
-import numpy as np
 import requests
-import git
 import os
 import glob
 from pathlib import Path
@@ -10,18 +7,13 @@ from typing import *
 from datetime import datetime
 import shutil
 
-# Clone the JHU repo into cwd
-jhu_repo = Path('COVID-19/')
-if jhu_repo.exists():
-    shutil.rmtree(jhu_repo)
+import pandemics.repo
 
-git.Git('').clone('git@github.com:CSSEGISandData/COVID-19.git')
-
-time_series_path = 'COVID-19/csse_covid_19_data/csse_covid_19_time_series/'
-
-recovered: pd.DataFrame = pd.read_csv(os.path.join(time_series_path, 'time_series_covid19_recovered_global.csv'))
-confirmed: pd.DataFrame = pd.read_csv(os.path.join(time_series_path, 'time_series_covid19_confirmed_global.csv'))
-deaths: pd.DataFrame = pd.read_csv(os.path.join(time_series_path, 'time_series_covid19_deaths_global.csv'))
+# Clone JHU repo into current working directory
+pandemics.repo.clone_jhu()
+recovered = pandemics.repo.jhu_recovered()
+confirmed = pandemics.repo.jhu_confirmed()
+deaths = pandemics.repo.jhu_deaths()
 
 # Load our world data from the data/world directory
 world = []
@@ -131,7 +123,7 @@ for date,df in zip(['3/24/20', '3/25/20', '3/26/20'], world):
     new_confirmed.append(c)
     new_deaths.append(d)
 
-def join_data(df, to_join):
+def join_data(df, to_join) -> pd.DataFrame:
     for j in to_join:
         df = df.merge(j, how='outer', on='country', suffixes=['_jhu', '_unh'])
         df = df.drop(columns=['latitude_jhu', 'longitude_jhu'])
@@ -145,6 +137,7 @@ def join_data(df, to_join):
     cols.insert(1, cols.pop(cols.index('latitude')))
     cols.insert(2, cols.pop(cols.index('longitude')))
     df = df[cols]
+
     return df
 
 recovered = join_data(recovered, new_recovered)
@@ -159,18 +152,21 @@ def take_greatest(df) -> pd.DataFrame:
         df[date] = df.filter(like=date).max(axis=1)
     
     df = df.drop(columns=to_drop)
-    df = df[['country', 'latitude', 'longitude'] + sorted(df.columns[3:], key=lambda d: datetime.strptime(d, '%m/%d/%y'))]
+    # Sort the date columns by their datetime value
+    date_cols = sorted(df.columns[3:], key=lambda d: datetime.strptime(d, '%m/%d/%y'))
+    # Convert date columns to integer
+    df = df.astype({d:'Int64' for d in date_cols})
+    df = df[['country', 'latitude', 'longitude'] + date_cols]
+
+    # Make null lat/lons 0s
+    df.latitude = df.latitude.fillna(0.0)
+    df.longitude = df.longitude.fillna(0.0)
 
     return df
 
 confirmed = take_greatest(confirmed)
 deaths = take_greatest(deaths)
 recovered = take_greatest(recovered)
-
-print(confirmed.head())
-print(deaths.head())
-print(recovered.head())
-
 
 Path('data/time_series').mkdir(exist_ok=True, parents=True)
 confirmed.to_csv('data/time_series/global_confirmed.csv')
