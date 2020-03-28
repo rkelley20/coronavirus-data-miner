@@ -10,7 +10,9 @@ import git
 import os
 
 # Common paths to be used for the scheduled tasks
-UNH_REPO_PATH = '/srv/miner/COVID19-DATA/'
+DATA_ROOT_DIR = '/srv/miner/'
+UNH_REPO_PATH = os.path.join(DATA_ROOT_DIR, 'COVID19-DATA')
+JHU_REPO_PATH = os.path.join(DATA_ROOT_DIR, 'COVID-19')
 TIMESERIES_PATH = 'covid_19_timeseries_data/'
 RECOVERED_CSV_NAME = 'world_country_recovered.csv'
 CONFIRMED_CSV_NAME = 'world_country_confirmed.csv'
@@ -36,43 +38,37 @@ def timeseries_update():
     pandemics.repo.push_files(repo, files=[RECOVERED_PATH, CONFIRMED_PATH, DEATHS_PATH], msg=f'Automatic update {datetime.now()}')
 
 def realtime_update():
-    recovered_jhu = pandemics.repo.jhu_recovered(normalize=True)
-    confirmed_jhu = pandemics.repo.jhu_confirmed(normalize=True)
-    deaths_jhu = pandemics.repo.jhu_deaths(normalize=True)
+   
+    confirmed, recovered, deaths = pandemics.processing.get_world_update(JHU_REPO_PATH, normalize=True, greatest=True)
 
-    # Get the most recent world data (contains confirmed, deaths, and recovered all in one)
-    unh_world = pandemics.fetch.world_data(normalize=True)
-
-    recovered_unh, confirmed_unh, deaths_unh = pandemics.processing.split_data(unh_world)
-
-    recovered = pandemics.processing.join_unh_jhu(recovered_jhu, recovered_unh, greatest=True)
-    confirmed = pandemics.processing.join_unh_jhu(confirmed_jhu, confirmed_unh, greatest=True)
-    deaths = pandemics.processing.join_unh_jhu(deaths_jhu, deaths_unh, greatest=True)
-
-    # Build the timeseries path if it doesn't already exist
-    pandemics.utils.build_path(TIMESERIES_PATH)
+    repo = pandemics.repo.clone_repo('git@github.com:unhcfreg/COVID19-DATA.git', UNH_REPO_PATH, force=False, use_ssh=True)
 
     # Save the data out to the repo that will eventu
-    recovered.to_csv(RECOVERED_PATH)
-    confirmed.to_csv(CONFIRMED_PATH)
-    deaths.to_csv(DEATHS_PATH)
+    recovered.to_csv(RECOVERED_CSV_PATH_PUBLIC)
+    confirmed.to_csv(CONFIRMED_CSV_PATH_PUBLIC)
+    deaths.to_csv(DEATHS_CSV_PATH_PUBLIC)
 
     # Push real time data
-    pandemics.repo.push_files(git.Repo(''), files=[RECOVERED_PATH, CONFIRMED_PATH, DEATHS_PATH], msg=f'Automatic update {datetime.now()}')
+    pandemics.repo.push_files(repo, files=[RECOVERED_CSV_PATH_PUBLIC, CONFIRMED_CSV_PATH_PUBLIC, DEATHS_CSV_PATH_PUBLIC], msg=f'Automatic update {datetime.now()}')
     
 
 if __name__ == '__main__':
+    
+    pandemics.utils.build_path(DATA_ROOT_DIR)
 
-    # Make sure repo is cloned at the start
-    pandemics.repo.clone_jhu(force=True)
+    # Do both of our tasks when the service starts immediately
+    pandemics.repo.clone_jhu(JHU_REPO_PATH, force=True)
+    realtime_update()
 
     #schedule.every().day.at('06:00').do(timeseries_update)
-    schedule.every(30).minutes.do(realtime_update)
-    schedule.every(6).hours.do(pandemics.repo.clone_jhu, force=True)
+    schedule.every(10).minutes.do(realtime_update)
+    schedule.every(6).hours.do(pandemics.repo.clone_jhu, JHU_REPO_PATH, force=True)
 
     while True:
         schedule.run_pending()
         time.sleep(30)
+    
+    
     
 
 
