@@ -111,3 +111,19 @@ def join_unh_jhu(df: pd.DataFrame, to_join: Union[pd.DataFrame, Iterable[pd.Data
         df = take_greatest(df)
 
     return df
+
+def get_world_update(normalize=True, greatest=True) -> pd.DataFrame:
+    recovered_jhu = pandemics.repo.jhu_recovered(normalize=normalize)
+    confirmed_jhu = pandemics.repo.jhu_confirmed(normalize=normalize)
+    deaths_jhu = pandemics.repo.jhu_deaths(normalize=normalize)
+
+    # Get the most recent world data (contains confirmed, deaths, and recovered all in one)
+    unh_world = pandemics.fetch.world_data(normalize=normalize)
+
+    recovered_unh, confirmed_unh, deaths_unh = pandemics.processing.split_data(unh_world)
+
+    recovered = pandemics.processing.join_unh_jhu(recovered_jhu, recovered_unh, greatest=greatest)
+    confirmed = pandemics.processing.join_unh_jhu(confirmed_jhu, confirmed_unh, greatest=greatest)
+    deaths = pandemics.processing.join_unh_jhu(deaths_jhu, deaths_unh, greatest=greatest)
+
+    return confirmed, recovered, deaths
