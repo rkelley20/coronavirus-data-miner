@@ -4,14 +4,15 @@ import csv
 def remove_bad_headers(data:str):
     '''Removes bad headers to ensure data can be parsed properly'''
     headers = [
-    'Territories\n**\n',
-    'European Region',
-    'European \nRegion ',
-    'South\n-\nEast Asia Region',
-    'Eastern Mediterranean Region',
-    'Region of the Americas',
-    'African Region',
-    'European Region ']
+        'Territories\n**\n',
+        'European Region',
+        'European \nRegion ',
+        'South\n-\nEast Asia Region',
+        'Eastern Mediterranean Region',
+        'Region of the Americas',
+        'African Region',
+        'European Region '
+    ]
 
     # used to check if the header is in the string
     for item in headers:
