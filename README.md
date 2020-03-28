@@ -7,18 +7,27 @@ Scrapes websites for the last coronavirus information across the world.
 pip install -r requirements.txt
 ```
 
+Copy the covid-data.service file into your /etc/systemd/system/ folder
+
+```zsh
+cp covid-data.serivce /etc/systemd/system/
+```
+
+
+
 ## Running
 
 Guaranteed compatible with Python 3.6.9+.
 
-Retrieve the most update to date data and save it out as CSV files.
+To start the service manually you can run the following command:
+
 ```zsh
-python fetch_data.py
+python3 covid-data-service.py
 ```
 
-Merge the data together with JHU data and save it out as CSVS.
-```zsh
-python merge_world_data.py
-```
+Otherwise, you can run the service (assuming you followed above steps) by doing the following
 
-The above command will create a `data` directory in the current working directory with all available CSV files.
+```zsh
+sudo systemctl covid-data start
+sudo systemctl covid-data enable
+```
