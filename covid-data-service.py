@@ -35,7 +35,8 @@ def timeseries_update():
     shutil.copyfile(RECOVERED_CSV_PATH_PRIVATE, RECOVERED_CSV_PATH_PUBLIC)
     shutil.copyfile(DEATHS_CSV_PATH_PRIVATE, DEATHS_CSV_PATH_PUBLIC)
 
-    pandemics.repo.push_files(repo, files=[RECOVERED_PATH, CONFIRMED_PATH, DEATHS_PATH], msg=f'Automatic update {datetime.now()}')
+    update_time = datetime.now().strftime('%-m/%-d/%Y %H:%M')
+    pandemics.repo.push_files(repo, files=[RECOVERED_PATH, CONFIRMED_PATH, DEATHS_PATH], msg=f'Automatic update {update_time}.')
 
 def realtime_update():
    
@@ -49,7 +50,8 @@ def realtime_update():
     deaths.to_csv(DEATHS_CSV_PATH_PUBLIC)
 
     # Push real time data
-    pandemics.repo.push_files(repo, files=[RECOVERED_CSV_PATH_PUBLIC, CONFIRMED_CSV_PATH_PUBLIC, DEATHS_CSV_PATH_PUBLIC], msg=f'Automatic update {datetime.now()}')
+    update_time = datetime.now().strftime('%-m/%-d/%Y %H:%M')
+    pandemics.repo.push_files(repo, files=[RECOVERED_CSV_PATH_PUBLIC, CONFIRMED_CSV_PATH_PUBLIC, DEATHS_CSV_PATH_PUBLIC], msg=f'Automatic update {update_time}.')
     
 
 if __name__ == '__main__':
