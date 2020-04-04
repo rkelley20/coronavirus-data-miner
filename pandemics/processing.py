@@ -4,8 +4,9 @@ import pandemics.utils
 from datetime import datetime
 import os.path
 
+_jhu_timeseries = 'csse_covid_19_data/csse_covid_19_time_series'
 
-def jhu_normalize(df: pd.DataFrame) -> pd.DataFrame:
+def jhu_world_normalize(df: pd.DataFrame) -> pd.DataFrame:
     # We are just gonna do per country data in this CSV file
     df = df.drop(columns=['Province/State'])
     # Change column names to the ones we use
@@ -48,7 +49,7 @@ def jhu_normalize(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def unh_normalize(df: pd.DataFrame) -> pd.DataFrame:
+def unh_world_normalize(df: pd.DataFrame) -> pd.DataFrame:
     df = df.astype({
         'cases': 'Int64',
         'new_cases': 'Int64',
@@ -113,17 +114,17 @@ def join_unh_jhu(df: pd.DataFrame, to_join: Union[pd.DataFrame, Iterable[pd.Data
 
     return df
 
-def get_jhu_data(path: str, normalize: bool = True) -> pd.DataFrame:
+def get_jhu_world_data(path: str, normalize: bool = True) -> pd.DataFrame:
     df = pd.read_csv(path)
     if normalize:
-        df = pandemics.processing.jhu_normalize(df)
+        df = pandemics.processing.jhu_world_normalize(df)
     return df
 
 def get_world_update(jhu_repo_path: str, normalize=True, greatest=True) -> pd.DataFrame:
 
-    recovered_jhu = get_jhu_data(os.path.join(jhu_repo_path, 'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'), normalize=normalize)
-    confirmed_jhu = get_jhu_data(os.path.join(jhu_repo_path, 'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'), normalize=normalize)
-    deaths_jhu = get_jhu_data(os.path.join(jhu_repo_path, 'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'), normalize=normalize)
+    recovered_jhu = get_jhu_world_data(os.path.join(jhu_repo_path, f'{_jhu_timeseries}/time_series_covid19_recovered_global.csv'), normalize=normalize)
+    confirmed_jhu = get_jhu_world_data(os.path.join(jhu_repo_path, f'{_jhu_timeseries}/time_series_covid19_confirmed_global.csv'), normalize=normalize)
+    deaths_jhu = get_jhu_world_data(os.path.join(jhu_repo_path, f'{_jhu_timeseries}/time_series_covid19_deaths_global.csv'), normalize=normalize)
 
     # Get the most recent world data (contains confirmed, deaths, and recovered all in one)
     unh_world = pandemics.fetch.world_data(normalize=normalize)
