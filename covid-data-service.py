@@ -37,7 +37,7 @@ REALTIME_FILES = [WORLD_RECOVERED_PATH, WORLD_CONFIRMED_PATH, WORLD_DEATHS_PATH,
 def realtime_update():
    
     confirmed_global, recovered_global, deaths_global = pandemics.processing.get_world_update(JHU_REPO_PATH, normalize=True, greatest=True)
-    confirmed_state, recovered_state, deaths_state = pandemics.processing.get_state_update(JHU_REPO_PATH, normalize=True, greatest=True)
+    confirmed_state, deaths_state = pandemics.processing.get_state_update(JHU_REPO_PATH, normalize=True, greatest=True)
 
     repo = pandemics.repo.clone_repo('git@github.com:unhcfreg/COVID19-DATA.git', UNH_REPO_PATH, force=False, use_ssh=True)
 
@@ -46,7 +46,6 @@ def realtime_update():
     confirmed_global.to_csv(WORLD_CONFIRMED_PATH)
     deaths_global.to_csv(WORLD_DEATHS_PATH)
 
-    recovered_state.to_csv(STATE_RECOVERED_PATH)
     confirmed_state.to_csv(STATE_CONFIRMED_PATH)
     deaths_state.to_csv(STATE_DEATHS_PATH)
 

@@ -8,6 +8,7 @@ from typing import *
 from pathlib import Path
 from geopy.geocoders.base import Geocoder
 from geopy.exc import GeopyError
+import shelve
 
 
 def load_newest_csv(path: str) -> pd.DataFrame:
@@ -55,8 +56,20 @@ def cache(func):
         return data
     return wrapper
 
+# Custom cache to disk based off the 2nd positional argument, used specifically for
+# caching lats and lons below
+def shelve_it(file_name):
+    d = shelve.open(file_name)
+    def decorator(func):
+        def new_func(*args):
+            loc = args[1]
+            if loc not in d:
+                d[loc] = func(*args)
+            return d[loc]
+        return new_func
+    return decorator
 
-@cache
+@shelve_it('latlon.shelve')
 def geocode(geocoder: Geocoder, location: str) -> Union[Tuple[float, float], Tuple[None, None]]:
     try:
         loc = geocoder.geocode(location)

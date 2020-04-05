@@ -21,7 +21,7 @@ def set_geocoder(new_geocoder: Geocoder) -> None:
     global geocoder
     geocoder = new_geocoder
 
-def state_data() -> pd.DataFrame:
+def state_data(normalize: bool = True) -> pd.DataFrame:
     r = requests.get('https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=1902046093', headers=headers)
     soup = BeautifulSoup(r.text, 'lxml')
 
@@ -33,23 +33,19 @@ def state_data() -> pd.DataFrame:
         tds = row.find_all('td')
         state = tds[0].string
         cases = try_int(tds[1].string)
-        deaths = try_int(tds[2].string)
-        serious = try_int(tds[3].string)
-        critical = try_int(tds[4].string)
-        recovered = try_int(tds[5].string)
+        deaths = try_int(tds[3].string)
+        recovered = try_int(tds[7].string)
 
-        # Do not want to falsley geocode cruise ship instances or cases where people were
-        # repatriated back to their country
-        if 'Princess' in state or 'repatriated' in state:
-            lat, lon = None, None
-        else:
-            lat, lon = geocode(geocoder, f'{state}, United States')
+        lat, lon = geocode(geocoder, f'{state}, United States')
         
-        rows.append((state, cases, deaths, serious, critical, recovered, lat, lat))
+        rows.append((state, cases, deaths, recovered, lat, lon))
     
     rows.sort(key=lambda r: r[0])
     
-    return pd.DataFrame(rows, columns=('state', 'cases', 'deaths', 'serious', 'critical', 'recovered', 'latitude', 'longitude'))
+    df = pd.DataFrame(rows, columns=('state', 'cases', 'deaths', 'recovered', 'latitude', 'longitude'))
+    if normalize:
+        df = pandemics.processing.unh_state_normalize(df)
+    return df
 
 def world_data(normalize: bool = True) -> pd.DataFrame:
     r = requests.get('https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=0&range=A1:I183', headers=headers)
@@ -82,7 +78,7 @@ def world_data(normalize: bool = True) -> pd.DataFrame:
                                 'percent_deaths', 'serious_and_critical', 'recovered',
                                 'latitude', 'longitude'))
     if normalize:
-        df = pandemics.processing.unh_normalize(df)
+        df = pandemics.processing.unh_world_normalize(df)
     return df
 
 def canada_province_data() -> pd.DataFrame:
