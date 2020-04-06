@@ -25,7 +25,8 @@ def clone_jhu(path: str, force: bool = True) -> None:
 
 def push_files(repo: git.Repo, files: Iterable[str], msg: str = '') -> None:
     try:
-        repo.git.add(update=True)
+        print(f'Pushing files to {repo}')
+        repo.git.add(files)
         repo.index.commit(msg)
         origin = repo.remote(name='origin')
         origin.push()
