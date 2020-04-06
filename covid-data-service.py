@@ -14,7 +14,7 @@ DATA_ROOT_DIR = '/srv/miner/'
 UNH_REPO_PATH = join(DATA_ROOT_DIR, 'COVID19-DATA')
 JHU_REPO_PATH = join(DATA_ROOT_DIR, 'COVID-19')
 JHU_TIMESERIES_PATH = join(JHU_REPO_PATH, 'csse_covid_19_data/csse_covid_19_time_series')
-TIMESERIES_PATH = 'covid_19_timeseries_data/'
+TIMESERIES_PATH = join(UNH_REPO_PATH, 'covid_19_timeseries_data/')
 
 WORLD_RECOVERED_CSV = 'world_country_recovered.csv'
 WORLD_CONFIRMED_CSV = 'world_country_confirmed.csv'
