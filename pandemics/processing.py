@@ -250,7 +250,7 @@ def get_state_county_update(jhu_timeseries_path: str, normalize: bool = True, gr
 
     unh_state = pandemics.fetch.state_data(normalize=normalize)
 
-    recovered_unh, confirmed_unh, deaths_unh = split_unh_data(unh_state)
+    recovered_unh, confirmed_unh, deaths_unh = split_unh_data(unh_state, pk='state')
 
     confirmed_state = join_unh_jhu(confirmed_unh, confirmed_jhu, pk='state', greatest=True)
     deaths_state = join_unh_jhu(deaths_unh, deaths_jhu, pk='state', greatest=True)
