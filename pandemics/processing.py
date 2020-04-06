@@ -244,8 +244,8 @@ def get_state_county_update(jhu_timeseries_path: str, normalize: bool = True, gr
     confirmed_jhu = get_jhu_state_data(join(jhu_timeseries_path, 'time_series_covid19_confirmed_US.csv'), normalize=normalize)
     deaths_jhu = get_jhu_state_data(join(jhu_timeseries_path, 'time_series_covid19_deaths_US.csv'), normalize=normalize)
 
-    confirmed_jhu_state, confirmed_jhu_county = split_jhu_state_data(confirmed_jhu)
-    deaths_jhu_state, deaths_jhu_county = split_jhu_state_data(deaths_jhu)
+    confirmed_jhu_county, confirmed_jhu_state = split_jhu_state_data(confirmed_jhu)
+    deaths_jhu_county, deaths_jhu_state = split_jhu_state_data(deaths_jhu)
     # JHU does not provide recovered US state data
 
     unh_state = pandemics.fetch.state_data(normalize=normalize)
