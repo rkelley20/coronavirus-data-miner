@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from typing import *
 import pandemics.utils
 from datetime import datetime
@@ -63,12 +64,13 @@ def unh_world_normalize(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def jhu_state_normalize(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.drop(columns=['UID', 'iso2', 'iso3', 'code3', 'FIPS', 'Country_Region', 'Combined_Key'])
+    df = df.drop(columns=['UID', 'iso2', 'iso3', 'code3', 'Country_Region', 'Combined_Key'])
     df = df.rename(columns={
         'Admin2': 'county',
         'Province_State': 'state',
         'Lat': 'latitude',
-        'Long_': 'longitude'
+        'Long_': 'longitude',
+        'FIPS': 'fips'
     })
 
     # Make state first column and county second column
@@ -89,6 +91,55 @@ def unh_state_normalize(df: pd.DataFrame) -> pd.DataFrame:
     df = df[~df.state.isin(drop_countries)]
     
     return df
+
+def nyt_county_normalize(df: pd.DataFrame) -> pd.DataFrame:
+    
+    df = df.rename(columns={
+        'cases': 'confirmed'
+    })
+
+    # Change their dates to the date format we use
+    # They use YYYY-MM-DD
+    # We use M/D/YYYY
+    def convert_nyt_date(date):
+        old = datetime.strptime(date, '%Y-%m-%d')
+        new = old.strftime('%-m/%-d/%y')
+        return new
+
+    df.date = df.date.map(convert_nyt_date)
+
+    # make fips an int instead of a float
+    df = df.astype({
+        'fips': 'Int64'
+    })
+
+    def split_nyt_data(df: pd.DataFrame) -> pd.DataFrame:
+        deaths = df.loc[:, df.columns != 'cases']
+        confirmed = df.loc[:, df.columns != 'deaths']
+        return confirmed, deaths
+
+    # Need to turn date column into a bunch of different columns for each state/county
+    dates = list(set(df.date))
+    dates.sort(key=lambda d: datetime.strptime(d, '%m/%d/%y'))
+
+    # Split into two dataframes for cases and deaths
+    confirmed, deaths = split_nyt_data(df)
+
+    # Do the following for each of recovered and deaths
+    def transpose_nyt_data(df: pd.DataFrame, expand: str) -> pd.DataFrame:
+        join_on = ['county', 'state', 'fips']
+        state_county = set(map(tuple, df[join_on].values))
+        t = pd.DataFrame(state_county, columns=join_on)
+        for date in dates:
+            s = df[df.date == date][join_on + [expand]]
+            s = s.rename(columns={expand: date})
+            t = t.merge(s, on=join_on, how='left')
+        return t
+
+    confirmed = transpose_nyt_data(confirmed, expand='confirmed')
+    deaths = transpose_nyt_data(deaths, expand='deaths')
+
+    return confirmed, deaths
 
 def split_jhu_state_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     
@@ -188,7 +239,7 @@ def get_world_update(jhu_timeseries_path: str, normalize: bool = True, greatest:
 
     return confirmed, recovered, deaths
 
-def get_state_update(jhu_timeseries_path: str, normalize: bool = True, greatest: bool = True):
+def get_state_county_update(jhu_timeseries_path: str, normalize: bool = True, greatest: bool = True):
 
     confirmed_jhu = get_jhu_state_data(join(jhu_timeseries_path, 'time_series_covid19_confirmed_US.csv'), normalize=normalize)
     deaths_jhu = get_jhu_state_data(join(jhu_timeseries_path, 'time_series_covid19_deaths_US.csv'), normalize=normalize)
@@ -201,10 +252,10 @@ def get_state_update(jhu_timeseries_path: str, normalize: bool = True, greatest:
 
     recovered_unh, confirmed_unh, deaths_unh = split_unh_date(unh_state)
 
-    confirmed = join_unh_jhu(confirmed_unh, confirmed_jhu, pk='state', greatest=True)
-    deaths = join_unh_jhu(deaths_unh, deaths_jhu, pk='state', greatest=True)
+    confirmed_state = join_unh_jhu(confirmed_unh, confirmed_jhu, pk='state', greatest=True)
+    deaths_state = join_unh_jhu(deaths_unh, deaths_jhu, pk='state', greatest=True)
 
-    return confirmed, deaths
+    return confirmed_state, deaths_state
 
     
 

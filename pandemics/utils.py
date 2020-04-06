@@ -44,18 +44,6 @@ def try_int(s) -> Union[int, None]:
     except:
         return None
 
-def cache(func):
-    _cache = {}
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        loc = args[1]
-        data = _cache.get(loc)
-        if data is None:
-            data = func(*args, **kwargs)
-            _cache[loc] = data
-        return data
-    return wrapper
-
 # Custom cache to disk based off the 2nd positional argument, used specifically for
 # caching lats and lons below
 def shelve_it(file_name):
