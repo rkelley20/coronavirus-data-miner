@@ -190,6 +190,7 @@ def take_greatest(df: pd.DataFrame, pk: str = 'country') -> pd.DataFrame:
 
     # If the new number is lower than the old number, use the old number
     df.iloc[:, -1] = df.iloc[:, [-1, -2]].max(axis=1)
+    df = df.astype({date_cols[-1]: 'Int64'})
 
     return df
 
@@ -230,35 +231,68 @@ def get_jhu_state_data(path: str, normalize: bool = True) -> pd.DataFrame:
 
 def get_world_update(jhu_timeseries_path: str, normalize: bool = True, greatest: bool = True) -> pd.DataFrame:
 
+    print('getting world update')
+
     recovered_jhu = get_jhu_world_data(join(jhu_timeseries_path, 'time_series_covid19_recovered_global.csv'), normalize=normalize)
     confirmed_jhu = get_jhu_world_data(join(jhu_timeseries_path, 'time_series_covid19_confirmed_global.csv'), normalize=normalize)
     deaths_jhu = get_jhu_world_data(join(jhu_timeseries_path, 'time_series_covid19_deaths_global.csv'), normalize=normalize)
 
+    print('got jhu world data, showing recovered')
+    print(recovered_jhu.head())
+
+    print('fetching unh world data')
     # Get the most recent world data (contains confirmed, deaths, and recovered all in one)
     unh_world = pandemics.fetch.world_data(normalize=normalize)
 
+    print('got unh world data')
+    print(unh_world.head())
+
     recovered_unh, confirmed_unh, deaths_unh = split_unh_data(unh_world)
 
+    print('split unh data, showing recovered')
+    print(recovered_unh.head())
+
+    print('joining our data with jhu')
     recovered = join_unh_jhu(recovered_jhu, recovered_unh, greatest=greatest)
     confirmed = join_unh_jhu(confirmed_jhu, confirmed_unh, greatest=greatest)
     deaths = join_unh_jhu(deaths_jhu, deaths_unh, greatest=greatest)
+
+    print('joined, showing combined recovered')
+    print(recovered.head())
 
     return confirmed, recovered, deaths
 
 def get_state_county_update(jhu_timeseries_path: str, normalize: bool = True, greatest: bool = True):
 
+    print('getting state update')
+
     confirmed_jhu = get_jhu_state_data(join(jhu_timeseries_path, 'time_series_covid19_confirmed_US.csv'), normalize=normalize)
     deaths_jhu = get_jhu_state_data(join(jhu_timeseries_path, 'time_series_covid19_deaths_US.csv'), normalize=normalize)
+
+    print('got jhu state data, showing confirmed')
+    print(confirmed_jhu.head())
 
     confirmed_jhu_county, confirmed_jhu_state = split_jhu_state_data(confirmed_jhu)
     deaths_jhu_county, deaths_jhu_state = split_jhu_state_data(deaths_jhu)
     # JHU does not provide recovered US state data
+    print('split jhu into county/state data, showing confirmed state')
+    print(confirmed_jhu_state.head())
 
+    print('fetching unh state data')
     unh_state = pandemics.fetch.state_data(normalize=normalize)
+
+    print('got our state data')
+    print(unh_state.head())
 
     recovered_unh, confirmed_unh, deaths_unh = split_unh_data(unh_state, pk='state')
 
+    print('split our state data, showing confirmed')
+    print(recovered_unh.head())
+
     confirmed_state = join_unh_jhu(confirmed_unh, confirmed_jhu_state, pk='state', greatest=greatest)
     deaths_state = join_unh_jhu(deaths_unh, deaths_jhu_state, pk='state', greatest=greatest)
+
+    print('joined, showing combined confirmed')
+    print(confirmed_state.head())
 
     return confirmed_state, deaths_state

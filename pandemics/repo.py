@@ -24,7 +24,10 @@ def clone_jhu(path: str, force: bool = True) -> None:
     return clone_repo('git@github.com:CSSEGISandData/COVID-19.git', path, force=force, use_ssh=False)
 
 def push_files(repo: git.Repo, files: Iterable[str], msg: str = '') -> None:
-    repo.git.add(files)
-    repo.index.commit(msg)
-    origin = repo.remote(name='origin')
-    origin.push()
+    try:
+        repo.git.add(update=True)
+        repo.index.commit(msg)
+        origin = repo.remote(name='origin')
+        origin.push()
+    except Exception as e:
+        print(f'Error pushing files: {e}')
