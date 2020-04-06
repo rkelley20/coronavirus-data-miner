@@ -156,6 +156,8 @@ def split_jhu_state_data(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.DataFrame]:
     state.latitude = lat
     state.longitude = lon
 
+    state = state.drop(columns=['fips'])
+
     return df, state
 
 
@@ -176,8 +178,8 @@ def take_greatest(df: pd.DataFrame, pk: str = 'country') -> pd.DataFrame:
     
     df = df.drop(columns=to_drop)
     # Sort the date columns by their datetime value
-    idx = 3 if pk == 'country' else 4
-    date_cols = sorted(df.columns[idx:], key=lambda d: datetime.strptime(d, '%m/%d/%y'))
+    
+    date_cols = sorted(df.columns[3:], key=lambda d: datetime.strptime(d, '%m/%d/%y'))
     # Convert date columns to integer
     df = df.astype({d:'Int64' for d in date_cols})
     df = df[[pk, 'latitude', 'longitude'] + date_cols]
@@ -253,7 +255,7 @@ def get_state_county_update(jhu_timeseries_path: str, normalize: bool = True, gr
 
     recovered_unh, confirmed_unh, deaths_unh = split_unh_data(unh_state, pk='state')
 
-    confirmed_state = join_unh_jhu(confirmed_unh, confirmed_jhu_state, pk='state', greatest=True)
-    deaths_state = join_unh_jhu(deaths_unh, deaths_jhu_state, pk='state', greatest=True)
+    confirmed_state = join_unh_jhu(confirmed_unh, confirmed_jhu_state, pk='state', greatest=greatest)
+    deaths_state = join_unh_jhu(deaths_unh, deaths_jhu_state, pk='state', greatest=greatest)
 
     return confirmed_state, deaths_state
