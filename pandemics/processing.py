@@ -64,7 +64,7 @@ def unh_world_normalize(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def jhu_state_normalize(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.drop(columns=['UID', 'iso2', 'iso3', 'code3', 'Country_Region', 'Combined_Key'])
+    df = df.drop(columns=['UID', 'iso2', 'iso3', 'code3', 'Country_Region', 'Combined_Key', 'Population'], errors='ignore')
     df = df.rename(columns={
         'Admin2': 'county',
         'Province_State': 'state',
