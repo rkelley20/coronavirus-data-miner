@@ -176,7 +176,8 @@ def take_greatest(df: pd.DataFrame, pk: str = 'country') -> pd.DataFrame:
     
     df = df.drop(columns=to_drop)
     # Sort the date columns by their datetime value
-    date_cols = sorted(df.columns[3:], key=lambda d: datetime.strptime(d, '%m/%d/%y'))
+    idx = 3 if pk == 'country' else 4
+    date_cols = sorted(df.columns[idx:], key=lambda d: datetime.strptime(d, '%m/%d/%y'))
     # Convert date columns to integer
     df = df.astype({d:'Int64' for d in date_cols})
     df = df[[pk, 'latitude', 'longitude'] + date_cols]
