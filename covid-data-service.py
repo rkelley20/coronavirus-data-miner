@@ -13,6 +13,7 @@ from os.path import join
 DATA_ROOT_DIR = '/srv/miner/'
 UNH_REPO_PATH = join(DATA_ROOT_DIR, 'COVID19-DATA')
 JHU_REPO_PATH = join(DATA_ROOT_DIR, 'COVID-19')
+JHU_TIMESERIES_PATH = join(JHU_REPO_PATH, 'csse_covid_19_data/csse_covid_19_time_series')
 TIMESERIES_PATH = 'covid_19_timeseries_data/'
 
 WORLD_RECOVERED_CSV = 'world_country_recovered.csv'
@@ -36,8 +37,8 @@ REALTIME_FILES = [WORLD_RECOVERED_PATH, WORLD_CONFIRMED_PATH, WORLD_DEATHS_PATH,
 
 def realtime_update():
    
-    confirmed_global, recovered_global, deaths_global = pandemics.processing.get_world_update(JHU_REPO_PATH, normalize=True, greatest=True)
-    confirmed_state, deaths_state = pandemics.processing.get_state_update(JHU_REPO_PATH, normalize=True, greatest=True)
+    confirmed_global, recovered_global, deaths_global = pandemics.processing.get_world_update(JHU_TIMESERIES_PATH, normalize=True, greatest=True)
+    confirmed_state, deaths_state = pandemics.processing.get_state_county_update(JHU_TIMESERIES_PATH, normalize=True, greatest=True)
 
     repo = pandemics.repo.clone_repo('git@github.com:unhcfreg/COVID19-DATA.git', UNH_REPO_PATH, force=False, use_ssh=True)
 
