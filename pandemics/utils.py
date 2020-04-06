@@ -48,6 +48,34 @@ def try_int(s) -> Union[int, None]:
 # caching lats and lons below
 def shelve_it(file_name):
     d = shelve.open(file_name)
+    d['Bhutan'] = (27.5142, 90.4336) # NE
+    d['Bosnia and Herzegovina'] = (43.9159, 17.6791) # NE
+    d['Cabo Verde'] = (16.5388, -23.0418) #NW
+    d['Central African Republic'] = (6.6111, 20.9394) # NE
+    d['Chad'] = (15.4542, 18.7322) # NE
+    d['Eswatini'] = (-26.5225, 31.4659) # SE
+    d['Gambia'] = (13.4432, -15.3101) # NW
+    d['Holy See'] = (41.9029, 12.4534) # NE
+    d['Mauritania'] = (21.0079, -10.9408) # NW
+    d['Nepal'] = (28.3949, 84.1240) # NE
+    d['Nicaragua'] = (12.8654, -85.2072) # NW
+    d['Papua New Guinea'] = (-6.3150, 143.9555) # SE
+    d['Saint Vincent and the Grenadines'] = (12.9843, -61.2872) # NW
+    d['Somalia'] = (5.1521, 46.1996) # NE
+    d['Zimbabwe'] = (-19.0154, 29.1549) # SE
+    d['Dominica'] = (15.4150, -61.3710) # NW
+    d['Timor-Leste'] = (-8.8742, 125.7275) # SE
+    d['Belize'] = (17.1899, -88.4976) # NW
+    d['West Bank and Gaza'] = (31.9466, 35.3027) # NE
+    d['Saint Kitts and Nevis'] = (17.3578, -62.7830) # NW
+    d['Burma'] = (21.9162, 95.9560) # NE
+    d['MS Zaandam'] = (26.0851, -80.1167) # NW
+    d['Botswana'] = (-22.3285, 24.6849) # SE
+    d['Burundi'] = (-3.3731, 29.9189) # SE
+    d['Sierra Leone'] = (8.4606, -11.7799) # NW
+    d['Malawi'] = (-13.2543, 34.3015) # SE
+    d['South Sudan'] = (6.8770, 31.3070) # NE
+    d['Western Sahara'] = (24.2155, -12.8858) # NW
     def decorator(func):
         def new_func(*args):
             loc = args[1]
