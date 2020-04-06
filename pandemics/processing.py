@@ -188,6 +188,9 @@ def take_greatest(df: pd.DataFrame, pk: str = 'country') -> pd.DataFrame:
     df.latitude = df.latitude.fillna(0.0)
     df.longitude = df.longitude.fillna(0.0)
 
+    # If the new number is lower than the old number, use the old number
+    df.iloc[:, -1] = df.iloc[:, [-1, -2]].max(axis=1)
+
     return df
 
 def join_unh_jhu(df: pd.DataFrame, to_join: Union[pd.DataFrame, Iterable[pd.DataFrame]], pk: str = 'country', greatest: bool = True) -> pd.DataFrame:
