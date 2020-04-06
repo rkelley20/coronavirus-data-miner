@@ -35,7 +35,7 @@ STATE_DEATHS_PATH = join(TIMESERIES_PATH, STATE_DEATHS_CSV)
 
 REALTIME_FILES = [join(TIMESERIES_FOLDER, d) for d in (WORLD_CONFIRMED_CSV, WORLD_RECOVERED_CSV, WORLD_DEATHS_CSV, STATE_CONFIRMED_CSV, STATE_DEATHS_CSV)]
 
-print(REALTIME_FILES)
+print(f'Files to be pushed: {REALTIME_FILES}')
 
 def realtime_update():
    
@@ -49,8 +49,11 @@ def realtime_update():
 
     print('Writing out CSVs...')
     recovered_global.to_csv(WORLD_RECOVERED_PATH)
+    print(f'Wrote to {WORLD_RECOVERED_PATH}')
     confirmed_global.to_csv(WORLD_CONFIRMED_PATH)
+    print(f'Wrote to {WORLD_CONFIRMED_PATH}')
     deaths_global.to_csv(WORLD_DEATHS_PATH)
+    print(f'Wrote to {WORLD_DEATHS_PATH}')
 
     confirmed_state.to_csv(STATE_CONFIRMED_PATH)
     deaths_state.to_csv(STATE_DEATHS_PATH)
@@ -59,6 +62,7 @@ def realtime_update():
     # Push real time data
     update_time = datetime.now().strftime('%-m/%-d/%Y @ %H:%M')
     print('Pushing files')
+    #pandemics.repo.push_files_cmd(UNH_REPO_PATH, REALTIME_FILES, msg=f'Automatic update {update_time}')
     pandemics.repo.push_files(repo, files=REALTIME_FILES, msg=f'Automatic update {update_time}')
     print('Pushing files complete')
     

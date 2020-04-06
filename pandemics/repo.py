@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import pandemics.processing
 from typing import *
+import subprocess
 
 def clone_repo(git_url: str, path: str, force: bool = True, use_ssh: bool = False) -> Union[git.Repo, None]:
     repo_path = Path(path)
@@ -25,10 +26,22 @@ def clone_jhu(path: str, force: bool = True) -> None:
 
 def push_files(repo: git.Repo, files: Iterable[str], msg: str = '') -> None:
     try:
+        origin = repo.remote(name='origin')
+        origin.pull()
         print(f'Pushing files to {repo}')
         repo.git.add(files)
         repo.index.commit(msg)
-        origin = repo.remote(name='origin')
         origin.push()
     except Exception as e:
         print(f'Error pushing files: {e}')
+
+def push_files_cmd(repo_dir: str, files: Iterable[str], msg: str = '') -> None:
+    os.chdir(repo_dir)
+
+    subprocess.call(['git', 'pull'])
+
+    for f in files:
+        subprocess.call(['git', 'add', f])
+    
+    subprocess.call(['git', 'commit', '-m', msg])
+    subprocess.call(['git', 'push'])
