@@ -48,7 +48,7 @@ print(f'Files to be pushed: {REALTIME_FILES}')
 def realtime_update():
    
     confirmed_global, recovered_global, deaths_global = pandemics.processing.get_world_update(JHU_TIMESERIES_PATH, normalize=True, greatest=True)
-    confirmed_state, deaths_state = pandemics.processing.get_state_county_update(JHU_TIMESERIES_PATH, normalize=True, greatest=True)
+    confirmed_state, deaths_state = pandemics.processing.get_state_update(JHU_TIMESERIES_PATH, normalize=True, greatest=True)
     confirmed_county, deaths_county = pandemics.processing.get_county_update(normalize=True)
 
     print('Cloning CFREG repo if it does not exist...')

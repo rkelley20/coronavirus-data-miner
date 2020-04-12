@@ -77,6 +77,7 @@ def shelve_it(file_name):
     d['South Sudan'] = (6.8770, 31.3070) # NE
     d['Western Sahara'] = (24.2155, -12.8858) # NW
     d['Georgia'] = (42.3154, 43.3569) # NE
+    d['Washington, United States'] = (47.7511, -120.7401)
     def decorator(func):
         def new_func(*args):
             loc = args[1]
