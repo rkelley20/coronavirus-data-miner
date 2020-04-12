@@ -3,10 +3,12 @@ import pandemics.processing
 import pandemics.utils
 import pandemics.fetch
 from datetime import datetime
+import pandas as pd
 import schedule
 import shutil
 import time
 import git
+import sys
 from os.path import join
 
 # Common paths to be used for the scheduled tasks
@@ -25,6 +27,9 @@ STATE_RECOVERED_CSV = 'us_state_recovered.csv'
 STATE_CONFIRMED_CSV = 'us_state_confirmed.csv'
 STATE_DEATHS_CSV = 'us_state_deaths.csv'
 
+COUNTY_CONFIRMED_CSV = 'us_county_confirmed.csv'
+COUNTY_DEATHS_CSV = 'us_county_deaths.csv'
+
 WORLD_RECOVERED_PATH = join(TIMESERIES_PATH, WORLD_RECOVERED_CSV)
 WORLD_CONFIRMED_PATH = join(TIMESERIES_PATH, WORLD_CONFIRMED_CSV)
 WORLD_DEATHS_PATH = join(TIMESERIES_PATH, WORLD_DEATHS_CSV)
@@ -33,7 +38,10 @@ STATE_RECOVERED_PATH = join(TIMESERIES_PATH, STATE_RECOVERED_CSV)
 STATE_CONFIRMED_PATH = join(TIMESERIES_PATH, STATE_CONFIRMED_CSV)
 STATE_DEATHS_PATH = join(TIMESERIES_PATH, STATE_DEATHS_CSV)
 
-REALTIME_FILES = [join(TIMESERIES_FOLDER, d) for d in (WORLD_CONFIRMED_CSV, WORLD_RECOVERED_CSV, WORLD_DEATHS_CSV, STATE_CONFIRMED_CSV, STATE_DEATHS_CSV)]
+COUNTY_CONFIRMED_PATH = join(TIMESERIES_PATH, COUNTY_CONFIRMED_CSV)
+COUNTY_DEATHS_PATH = join(TIMESERIES_PATH, COUNTY_DEATHS_CSV)
+
+REALTIME_FILES = [join(TIMESERIES_FOLDER, d) for d in (WORLD_CONFIRMED_CSV, WORLD_RECOVERED_CSV, WORLD_DEATHS_CSV, STATE_CONFIRMED_CSV, STATE_DEATHS_CSV, COUNTY_CONFIRMED_CSV, COUNTY_DEATHS_CSV)]
 
 print(f'Files to be pushed: {REALTIME_FILES}')
 
@@ -41,6 +49,7 @@ def realtime_update():
    
     confirmed_global, recovered_global, deaths_global = pandemics.processing.get_world_update(JHU_TIMESERIES_PATH, normalize=True, greatest=True)
     confirmed_state, deaths_state = pandemics.processing.get_state_county_update(JHU_TIMESERIES_PATH, normalize=True, greatest=True)
+    confirmed_county, deaths_county = pandemics.processing.get_county_update(normalize=True)
 
     print('Cloning CFREG repo if it does not exist...')
     repo = pandemics.repo.clone_repo('git@github.com:unhcfreg/COVID19-DATA.git', UNH_REPO_PATH, force=False, use_ssh=True)
@@ -56,7 +65,13 @@ def realtime_update():
     print(f'Wrote to {WORLD_DEATHS_PATH}')
 
     confirmed_state.to_csv(STATE_CONFIRMED_PATH)
+    print(f'Wrote to {STATE_CONFIRMED_PATH}')
     deaths_state.to_csv(STATE_DEATHS_PATH)
+    print(f'Wrote to {STATE_DEATHS_PATH}')
+
+    confirmed_county.to_csv(COUNTY_CONFIRMED_PATH)
+    deaths_county.to_csv(COUNTY_DEATHS_PATH)
+
     print('Writing CSVs complete...')
 
     # Push real time data
@@ -68,7 +83,7 @@ def realtime_update():
     
 
 if __name__ == '__main__':
-    
+
     pandemics.utils.build_path(DATA_ROOT_DIR)
 
     # Do both of our tasks when the service starts immediately

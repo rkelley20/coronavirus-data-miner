@@ -110,7 +110,7 @@ def nyt_county_normalize(df: pd.DataFrame) -> pd.DataFrame:
 
     # make fips an int instead of a float
     df = df.astype({
-        'fips': 'Int64'
+        'fips': 'object'
     })
 
     def split_nyt_data(df: pd.DataFrame) -> pd.DataFrame:
@@ -138,6 +138,23 @@ def nyt_county_normalize(df: pd.DataFrame) -> pd.DataFrame:
 
     confirmed = transpose_nyt_data(confirmed, expand='confirmed')
     deaths = transpose_nyt_data(deaths, expand='deaths')
+    table = pandemics.fetch.county_table()
+
+    def geocode_nyt(df):
+        df = pd.merge(df, table, how='left', on='fips')
+
+        cols = df.columns.tolist()
+        cols = cols[:3] + cols[-2:] + cols[3:-2]
+        df = df[cols]
+
+        date_cols = [col for col in df.columns if '/' in col]
+        date_retype = {d: 'Int64' for d in date_cols}
+
+        df = df.astype(date_retype)
+        return df
+
+    confirmed = geocode_nyt(confirmed)
+    deaths = geocode_nyt(deaths)
 
     return confirmed, deaths
 
@@ -262,7 +279,7 @@ def get_world_update(jhu_timeseries_path: str, normalize: bool = True, greatest:
 
     return confirmed, recovered, deaths
 
-def get_state_county_update(jhu_timeseries_path: str, normalize: bool = True, greatest: bool = True):
+def get_state_update(jhu_timeseries_path: str, normalize: bool = True, greatest: bool = True):
 
     print('getting state update')
 
@@ -296,3 +313,7 @@ def get_state_county_update(jhu_timeseries_path: str, normalize: bool = True, gr
     print(confirmed_state.head())
 
     return confirmed_state, deaths_state
+
+def get_county_update(normalize: bool = True):
+    confirmed, recovered = pandemics.fetch.county_data(normalize)
+    return confirmed, recovered

@@ -6,6 +6,7 @@ import pandas as pd
 from pandemics.utils import geocode, try_int, write_csv
 import pandemics.processing
 from typing import *
+from io import StringIO
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:10.0) Gecko/20100101 Firefox/10.0'
@@ -48,18 +49,42 @@ def state_data(normalize: bool = True) -> pd.DataFrame:
         df = pandemics.processing.unh_state_normalize(df)
     return df
 
+def county_table() -> pd.DataFrame:
+    r = requests.get('https://en.wikipedia.org/wiki/User:Michael_J/County_table', headers=headers)
+    
+    soup = BeautifulSoup(r.text, 'lxml')
+    table = soup.find('table')
+    tbody = table.find('tbody')
+
+    rows = []
+
+    for row in tbody.find_all('tr')[1:]:
+        tds = row.find_all('td')
+        fips = tds[2].text
+        lat = tds[-2].text.strip('\n').strip('°').replace('–', '-') # Remove degree symbol
+        lon = tds[-1].text.strip('\n').strip('°').replace('–', '-')
+        lat = float(lat)
+        lon = float(lon)
+        rows.append((fips, lat, lon))
+
+    df = pd.DataFrame(rows, columns=('fips', 'latitude', 'longitude'))
+
+    df = df.astype({
+        'latitude': 'float64',
+        'longitude': 'float64'
+    })
+
+    return df
+
 def county_data(normalize: bool = True) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
     r = requests.get('https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties.csv', headers=headers)
     
-    with open('/tmp/county.csv', 'w') as fp:
-        fp.write(r.text)
-    with open('/tmp/county.csv', 'r') as fp:
-        df = pd.read_csv(fp)
+    stream = StringIO(r.text)
+    df = pd.read_csv(stream)
     
     if normalize:
         df = pandemics.processing.nyt_county_normalize(df)
     return df
-
 
 def world_data(normalize: bool = True) -> pd.DataFrame:
     r = requests.get('https://docs.google.com/spreadsheets/u/0/d/e/2PACX-1vR30F8lYP3jG7YOq8es0PBpJIE5yvRVZffOyaqC0GgMBN6yt0Q-NI8pxS7hd1F9dYXnowSC6zpZmW9D/pubhtml/sheet?headers=false&gid=0&range=A1:I183', headers=headers)
