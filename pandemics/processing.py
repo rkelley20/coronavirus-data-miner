@@ -108,11 +108,6 @@ def nyt_county_normalize(df: pd.DataFrame) -> pd.DataFrame:
 
     df.date = df.date.map(convert_nyt_date)
 
-    # make fips an int instead of a float
-    df = df.astype({
-        'fips': 'object'
-    })
-
     def split_nyt_data(df: pd.DataFrame) -> pd.DataFrame:
         deaths = df.loc[:, df.columns != 'cases']
         confirmed = df.loc[:, df.columns != 'deaths']
@@ -138,6 +133,14 @@ def nyt_county_normalize(df: pd.DataFrame) -> pd.DataFrame:
 
     confirmed = transpose_nyt_data(confirmed, expand='confirmed')
     deaths = transpose_nyt_data(deaths, expand='deaths')
+
+     # make fips an str instead of a float
+    confirmed = confirmed.astype({'fips': 'object'})
+    deaths = deaths.astype({'fips': 'object'})
+
+    confirmed.fips = confirmed.fips.astype('Int64').astype(str).str.zfill(5)
+    deaths.fips = deaths.fips.astype('Int64').astype(str).str.zfill(5)
+
     table = pandemics.fetch.county_table()
 
     def geocode_nyt(df):
@@ -151,6 +154,7 @@ def nyt_county_normalize(df: pd.DataFrame) -> pd.DataFrame:
         date_retype = {d: 'Int64' for d in date_cols}
 
         df = df.astype(date_retype)
+
         return df
 
     confirmed = geocode_nyt(confirmed)

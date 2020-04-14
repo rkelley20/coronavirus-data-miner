@@ -74,6 +74,8 @@ def county_table() -> pd.DataFrame:
         'longitude': 'float64'
     })
 
+    df.fips = df.fips.astype(str).str.zfill(5)
+
     return df
 
 def county_data(normalize: bool = True) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
